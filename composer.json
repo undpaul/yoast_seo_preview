@@ -1,0 +1,13 @@
+{
+  "name": "ol0lll/seo_preview",
+  "type": "drupal-module",
+  "description": "Provides YoastSEO.js content analysis based on node preview",
+  "keywords": ["Drupal"],
+  "license": "GPL-2.0+",
+  "homepage": "https://github.com/ol0lll/seo_preview",
+  "minimum-stability": "dev",
+  "support": {
+    "issues": "https://github.com/ol0lll/seo_preview/issues"
+  },
+  "require": { }
+}

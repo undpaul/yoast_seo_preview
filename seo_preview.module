@@ -1,0 +1,24 @@
+<?php
+
+/**
+ * @file
+ * Contains seo_preview.module.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+
+/**
+ * Implements hook_help().
+ */
+function seo_preview_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    // Main module help for the seo_preview module.
+    case 'help.page.seo_preview':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('SEO Preview') . '</p>';
+      return $output;
+
+    default:
+  }
+}

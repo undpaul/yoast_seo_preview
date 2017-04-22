@@ -1,0 +1,4 @@
+name: SEO Preview
+type: module
+description: Provides YoastSEO.js content analysis based on node preview.
+core: 8.x
