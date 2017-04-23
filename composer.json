@@ -13,17 +13,17 @@
       "type": "package",
       "package": {
         "name": "Yoast/YoastSEO.js",
-        "version": "1.7.0",
+        "version": "1.2.0",
         "type": "drupal-library",
         "dist": {
-          "url": "https://github.com/Yoast/YoastSEO.js/archive/1.7.0.zip",
+          "url": "https://github.com/Yoast/YoastSEO.js/archive/1.2.0.zip",
           "type": "zip"
         }
       }
     }
   ],
   "require": {
-    "Yoast/YoastSEO.js": "1.7.0"
+    "Yoast/YoastSEO.js": "1.2.0"
   },
   "minimum-stability": "dev",
   "prefer-stable": true
