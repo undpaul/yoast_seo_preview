@@ -1,0 +1,16 @@
+yoastseo:
+ version: 1.2.0
+ js:
+   /libraries/YoastSEO.js/dist/yoast-seo.js: {}
+ dependencies:
+     - core/jquery
+     - core/jquery.once
+     - core/drupal
+     - core/drupalSettings
+ css:
+   component:
+     /libraries/YoastSEO.js/dist/yoast-seo.min.css: {}
+
+seo_preview:
+ js:
+    js/seo_preview.js: {}
