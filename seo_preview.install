@@ -1,0 +1,28 @@
+<?php
+
+/**
+ * @file
+ * Defines library requirements and install routines.
+ */
+
+/**
+ * Implements hook_requirements().
+ */
+function seo_preview_requirements($phase) {
+
+  $requirements = [];
+
+  $yoastseo_path = DRUPAL_ROOT . '/libraries/YoastSEO.js/dist/yoast-seo.min.js';
+
+  if (!file_exists($yoastseo_path)) {
+    $requirements['yoastseo'] = array(
+      'title' => t('yoastseo library missing'),
+      'description' => t(
+        'Seo preview requires the YoastSEO.js library. Download https://github.com/Yoast/YoastSEO.js/archive/1.2.0.zip and extract it to /libraries/YoastSEO.js.'
+       ),
+      'severity' => REQUIREMENT_ERROR,
+    );
+  }
+
+  return $requirements;
+}
