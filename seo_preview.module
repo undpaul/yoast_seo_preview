@@ -5,7 +5,9 @@
  * Contains seo_preview.module.
  */
 
+use \Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\seo_preview\Form\SeoPreviewFormHandler;
 
 /**
  * Implements hook_help().
@@ -20,5 +22,33 @@ function seo_preview_help($route_name, RouteMatchInterface $route_match) {
       return $output;
 
     default:
+  }
+}
+
+/**
+ * Implements hook_entity_type_alter().
+ *
+ * Sets the default seo_preview_form form handler to entity type node.
+ *
+ * @see \Drupal\Core\Entity\Annotation\EntityType
+ */
+function seo_preview_entity_type_alter(array &$entity_types) {
+  /* @var $entity_types \Drupal\Core\Entity\EntityTypeInterface[] */
+  $entity_types['node']->setHandlerClass('seo_preview_form', SeoPreviewFormHandler::class);
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function seo_preview_form_node_form_alter(array &$form,FormStateInterface &$form_state, $form_id) {
+
+  // Applying form handling.
+  // @todo Implement configuration to enable this by node type.
+  $entity_type_manager = \Drupal::entityTypeManager();
+  if ($entity_type_manager->hasHandler('node', 'seo_preview_form')) {
+    $seo_preview_form_handler = $entity_type_manager->getHandler('node', 'seo_preview_form');
+    if ($seo_preview_form_handler instanceof SeoPreviewFormHandler) {
+      $seo_preview_form_handler->formAlter($form, $form_state);
+    }
   }
 }
