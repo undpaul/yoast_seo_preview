@@ -7,7 +7,7 @@
 
   Drupal.behaviors.seoPreview = {
     attach: function (context, settings) {
-      $('#edit-yoast-seo-preview', context).once('seo-preview').each(function() {
+      $('#edit-yoast-seo-preview', context).once('yoast-seo-preview').each(function() {
         var seoPreview = new YoastSEO.seoPreview();
         var args = {
           targets: {
@@ -40,8 +40,8 @@
   YoastSEO.seoPreview.prototype.getData = function() {
     return {
       keyword: document.getElementById( "edit-keyword" ).value,
-      pageTitle: drupalSettings.seo_preview.pageTitle,
-      text: drupalSettings.seo_preview.body
+      pageTitle: drupalSettings.yoast_seo_preview.pageTitle,
+      text: drupalSettings.yoast_seo_preview.body
     };
 
   };
