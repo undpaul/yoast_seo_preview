@@ -18,7 +18,7 @@ function yoast_seo_preview_requirements($phase) {
     $requirements['yoastseo'] = array(
       'title' => t('yoastseo library missing'),
       'description' => t(
-        'Seo preview requires the YoastSEO.js library. Download https://github.com/Yoast/YoastSEO.js/archive/1.2.0.zip and extract it to /libraries/YoastSEO.js.'
+        'Yoast seo preview requires the YoastSEO.js library. Download https://github.com/Yoast/YoastSEO.js/archive/1.2.0.zip and extract it to /libraries/YoastSEO.js.'
        ),
       'severity' => REQUIREMENT_ERROR,
     );
