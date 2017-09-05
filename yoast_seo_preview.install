@@ -8,7 +8,7 @@
 /**
  * Implements hook_requirements().
  */
-function seo_preview_requirements($phase) {
+function yoast_seo_preview_requirements($phase) {
 
   $requirements = [];
 

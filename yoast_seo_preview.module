@@ -1,0 +1,54 @@
+<?php
+
+/**
+ * @file
+ * Contains yoast_seo_preview.module.
+ */
+
+use \Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\yoast_seo_preview\Form\YoastSeoPreviewFormHandler;
+
+/**
+ * Implements hook_help().
+ */
+function yoast_seo_preview_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    // Main module help for the yoast_seo_preview module.
+    case 'help.page.yoast_seo_preview':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('SEO Preview') . '</p>';
+      return $output;
+
+    default:
+  }
+}
+
+/**
+ * Implements hook_entity_type_alter().
+ *
+ * Sets the default yoast_seo_preview_form form handler to entity type node.
+ *
+ * @see \Drupal\Core\Entity\Annotation\EntityType
+ */
+function yoast_seo_preview_entity_type_alter(array &$entity_types) {
+  /* @var $entity_types \Drupal\Core\Entity\EntityTypeInterface[] */
+  $entity_types['node']->setHandlerClass('yoast_seo_preview_form', YoastSeoPreviewFormHandler::class);
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function yoast_seo_preview_form_node_form_alter(array &$form,FormStateInterface &$form_state, $form_id) {
+
+  // Applying form handling.
+  // @todo Implement configuration to enable this by node type.
+  $entity_type_manager = \Drupal::entityTypeManager();
+  if ($entity_type_manager->hasHandler('node', 'yoast_seo_preview_form')) {
+    $yoast_seo_preview_form_handler = $entity_type_manager->getHandler('node', 'yoast_seo_preview_form');
+    if ($yoast_seo_preview_form_handler instanceof YoastSeoPreviewFormHandler) {
+      $yoast_seo_preview_form_handler->formAlter($form, $form_state);
+    }
+  }
+}

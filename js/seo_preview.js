@@ -7,7 +7,7 @@
 
   Drupal.behaviors.seoPreview = {
     attach: function (context, settings) {
-      $('#edit-seo-preview', context).once('seo-preview').each(function() {
+      $('#edit-yoast-seo-preview', context).once('seo-preview').each(function() {
         var seoPreview = new YoastSEO.seoPreview();
         var args = {
           targets: {
@@ -50,7 +50,7 @@
    * Calls the eventbinders.
    */
   YoastSEO.seoPreview.prototype.bindElementEvents = function( app ) {
-    $("#edit-seo-preview-button").on("change", app.analyzeTimer.bind( app ) );
+    $("#edit-yoast-seo-preview-button").on("change", app.analyzeTimer.bind( app ) );
   };
 
   /**

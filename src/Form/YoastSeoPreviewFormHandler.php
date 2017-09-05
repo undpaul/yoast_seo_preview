@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\seo_preview\Form;
+namespace Drupal\yoast_seo_preview\Form;
 
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\InvokeCommand;
@@ -15,14 +15,14 @@ use Drupal\Core\Entity\EntityHandlerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Base class for seo_preview form handlers.
+ * Base class for yoast_seo_preview form handlers.
  */
-class SeoPreviewFormHandler implements EntityHandlerInterface {
+class YoastSeoPreviewFormHandler implements EntityHandlerInterface {
 
   use DependencySerializationTrait;
 
   /**
-   * The type of the entity for whose form the seo_preview form is used.
+   * The type of the entity for whose form the yoast_seo_preview form is used.
    *
    * @var string
    */
@@ -125,19 +125,19 @@ class SeoPreviewFormHandler implements EntityHandlerInterface {
     $node_preview = $form_state->getFormObject()->getEntity();
     $node_preview->in_preview = TRUE;
 
-    $settings['seo_preview'] = [
+    $settings['yoast_seo_preview'] = [
       'body' => $this->preview($node_preview, 'full'),
       'pageTitle' => $this->previewTitle($node_preview),
     ];
 
     $response = new AjaxResponse();
     $response->addCommand(new SettingsCommand($settings, TRUE));
-    $response->addCommand(new InvokeCommand('#edit-seo-preview-button', 'change'));
+    $response->addCommand(new InvokeCommand('#edit-yoast-seo-preview-button', 'change'));
     return $response;
   }
 
   /**
-   * Adds seo_preview details to the form.
+   * Adds yoast_seo_preview details to the form.
    *
    * @param array $form
    * @param \Drupal\Core\Form\FormStateInterface $form_state
@@ -146,38 +146,38 @@ class SeoPreviewFormHandler implements EntityHandlerInterface {
 
     // Attach libraries and default settings.
     // @todo Add values to settings.
-    $form['seo_preview'] = [
+    $form['yoast_seo_preview'] = [
       '#type' => 'details',
       '#weight' => 99,
       '#title' => t('SEO preview'),
       '#open' => TRUE,
       '#attached' => [
         'library' => [
-          'seo_preview/yoastseo',
-          'seo_preview/seo_preview',
+          'yoast_seo_preview/yoastseo',
+          'yoast_seo_preview/seo_preview',
         ],
         'drupalSettings' => [
-          'seo_preview' => [
+          'yoast_seo_preview' => [
             'body' => '',
             'pageTitle' => ''
           ]
         ]
       ],
     ];
-    // Markup for yoaste_seo library output.
+    // Markup for YoastSeo.js library output.
     // @todo: Add template.
-    $form['seo_preview']['content'] = [
+    $form['yoast_seo_preview']['content'] = [
       '#markup' => '<div id="snippet"></div><div id="scores"></div><div id="output"></div><div id="preview-content"></div>',
     ];
     // Keyword field used by yoast_seo.
-    $form['seo_preview']['keyword'] = [
+    $form['yoast_seo_preview']['keyword'] = [
       '#type' => 'textfield',
       '#title' => t('Focus keyword'),
       '#default_value' => isset($form_state->getUserInput()['keyword']) ? $form_state->getUserInput()['keyword'] : NULL,
       '#description' => t("Pick the main keyword or keyphrase that this post/page is about."),
     ];
     // Add preview button.
-    $form['seo_preview']['seo_preview_button'] = [
+    $form['yoast_seo_preview']['yoast_seo_preview_button'] = [
       '#type' => 'button',
       '#value' => t('Seo preview'),
       '#ajax' => [
