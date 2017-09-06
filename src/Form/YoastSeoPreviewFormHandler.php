@@ -135,55 +135,20 @@ class YoastSeoPreviewFormHandler implements EntityHandlerInterface {
     $response->addCommand(new InvokeCommand('#edit-yoast-seo-preview-button', 'change'));
     return $response;
   }
-
+  
   /**
-   * Adds yoast_seo_preview details to the form.
+   * Adds yoast_seo_preview submit.
    *
-   * @param array $form
+   * @param array $element
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    */
-  public function formAlter(array &$form, FormStateInterface $form_state) {
-
-    // Attach libraries and default settings.
-    // @todo Add values to settings.
-    $form['yoast_seo_preview'] = [
-      '#type' => 'details',
-      '#weight' => 99,
-      '#title' => t('SEO preview'),
-      '#open' => TRUE,
-      '#attached' => [
-        'library' => [
-          'yoast_seo_preview/yoastseo',
-          'yoast_seo_preview/seo_preview',
-        ],
-        'drupalSettings' => [
-          'yoast_seo_preview' => [
-            'body' => '',
-            'pageTitle' => ''
-          ]
-        ]
-      ],
-    ];
-    // Markup for YoastSeo.js library output.
-    // @todo: Add template.
-    $form['yoast_seo_preview']['content'] = [
-      '#markup' => '<div id="snippet"></div><div id="scores"></div><div id="output"></div><div id="preview-content"></div>',
-    ];
-    // Keyword field used by yoast_seo.
-    $form['yoast_seo_preview']['keyword'] = [
-      '#type' => 'textfield',
-      '#title' => t('Focus keyword'),
-      '#default_value' => isset($form_state->getUserInput()['keyword']) ? $form_state->getUserInput()['keyword'] : NULL,
-      '#description' => t("Pick the main keyword or keyphrase that this post/page is about."),
-    ];
-    // Add preview button.
-    $form['yoast_seo_preview']['yoast_seo_preview_button'] = [
+  public function addPreviewSubmit(array &$element, FormStateInterface $form_state) {
+    $element['yoast_seo_preview_button'] = [
       '#type' => 'button',
       '#value' => t('Seo preview'),
       '#ajax' => [
         'callback' => [$this, 'previewSubmitAjax'],
       ]
     ];
-
   }
 }
