@@ -113,7 +113,6 @@ class YoastSeoPreviewWidget extends WidgetBase implements ContainerFactoryPlugin
       '#default_value' => isset($items[$delta]->value) ? $items[$delta]->value : NULL,
     ];
 
-
     $element = [
       '#type' => 'details',
       '#weight' => 99,
@@ -121,35 +120,31 @@ class YoastSeoPreviewWidget extends WidgetBase implements ContainerFactoryPlugin
       '#open' => TRUE,
       '#attached' => [
         'library' => [
-          'yoast_seo_preview/yoastseo',
           'yoast_seo_preview/seo_preview',
         ],
         'drupalSettings' => [
           'yoast_seo_preview' => [
             'body' => '',
-            'pageTitle' => ''
-          ]
-        ]
+            'pageTitle' => '',
+          ],
+        ],
       ],
     ];
 
-    // Markup for YoastSeo.js library output.
-    // @todo: Add template.
-    $element['content'] = [
-      '#markup' => '<div id="snippet"></div><div id="scores"></div><div id="output"></div><div id="preview-content"></div>',
-    ];
     // Keyword field used by yoast_seo_preview.
     $element['keyword'] = $keyword;
 
     // Add preview button.
-    // $this->entityTypeManager
     $target_type = $this->fieldDefinition->getTargetEntityTypeId();
-    if($this->entityTypeManager->hasHandler($target_type, 'yoast_seo_preview_form')) {
+    if ($this->entityTypeManager->hasHandler($target_type, 'yoast_seo_preview_form')) {
       $form_handler = $this->entityTypeManager->getHandler($target_type, 'yoast_seo_preview_form');
+
       if ($form_handler instanceof YoastSeoPreviewFormHandler) {
         $form_handler->addPreviewSubmit($element, $form_state);
+
         // Render preview.
         $node_preview = $form_state->getFormObject()->getEntity();
+
         if ($node_preview instanceof Node) {
           $node_preview->in_preview = TRUE;
           $element['#attached']['drupalSettings']['yoast_seo_preview'] = [
@@ -171,4 +166,5 @@ class YoastSeoPreviewWidget extends WidgetBase implements ContainerFactoryPlugin
     }
     return $values;
   }
+
 }

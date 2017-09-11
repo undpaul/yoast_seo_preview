@@ -2,10 +2,10 @@
 
 /**
  * @file
- * Contains yoast_seo_preview.module.
+ * Contains yoast_seo related functions.
  */
 
-use \Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\yoast_seo_preview\Form\YoastSeoPreviewFormHandler;
 

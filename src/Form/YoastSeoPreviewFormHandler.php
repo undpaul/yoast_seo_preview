@@ -2,8 +2,10 @@
 
 namespace Drupal\yoast_seo_preview\Form;
 
+use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\InvokeCommand;
+use Drupal\Core\Ajax\OpenModalDialogCommand;
 use Drupal\Core\Ajax\SettingsCommand;
 use Drupal\Core\DependencyInjection\DependencySerializationTrait;
 use Drupal\Core\Entity\EntityInterface;
@@ -36,7 +38,7 @@ class YoastSeoPreviewFormHandler implements EntityHandlerInterface {
   protected $entityType;
 
   /**
-   * The entity type manager
+   * The entity type manager.
    *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
@@ -53,14 +55,17 @@ class YoastSeoPreviewFormHandler implements EntityHandlerInterface {
    * SeoPreviewFormHandler constructor.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+   *   The entity type.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
    * @param \Drupal\Core\Render\RendererInterface $renderer
+   *   The renderer.
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager,  RendererInterface $renderer) {
+  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, RendererInterface $renderer) {
     $this->entityTypeId = $entity_type->id();
     $this->entityType = $entity_type;
-    $this->entityTypeManager =  $entity_type_manager;
-    $this->renderer =  $renderer;
+    $this->entityTypeManager = $entity_type_manager;
+    $this->renderer = $renderer;
   }
 
   /**
@@ -78,11 +83,15 @@ class YoastSeoPreviewFormHandler implements EntityHandlerInterface {
    * Renders a node preview.
    *
    * @param \Drupal\Core\Entity\EntityInterface $node_preview
+   *   The node preview.
    * @param string $view_mode_id
-   * @param null $langcode
-   * @return \Drupal\Component\Render\MarkupInterface
+   *   (optional) The view mode that should be used to display the entity.
+   *   Defaults to 'full'.
+   *
+   * @return array
+   *   A render array as expected by drupal_render().
    */
-  public function preview(EntityInterface $node_preview, $view_mode_id = 'full', $langcode = NULL) {
+  public function preview(EntityInterface $node_preview, $view_mode_id = 'full') {
     $node_preview->preview_view_mode = $view_mode_id;
 
     // Building preview, see NodePreviewController.
@@ -100,7 +109,6 @@ class YoastSeoPreviewFormHandler implements EntityHandlerInterface {
     return $this->renderer->render($build);
   }
 
-
   /**
    * Renders the title of a node in preview.
    *
@@ -117,30 +125,48 @@ class YoastSeoPreviewFormHandler implements EntityHandlerInterface {
   /**
    * Ajax Callback for returning node preview to seo library.
    *
-   * @param $form
+   * @param array $form
+   *   The complete form array.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The current state of the form.
+   *
    * @return \Drupal\Core\Ajax\AjaxResponse
+   *   The ajax response.
    */
-  public function previewSubmitAjax($form, FormStateInterface $form_state) {
+  public function previewSubmitAjax(array &$form, FormStateInterface $form_state) {
     $node_preview = $form_state->getFormObject()->getEntity();
     $node_preview->in_preview = TRUE;
 
+    $parents = $form_state->getTriggeringElement()['#parents'];
+    array_splice($parents, -1, 1, 'keyword');
+    $keyword = NestedArray::getValue($form_state->getUserInput(), $parents);
+
     $settings['yoast_seo_preview'] = [
-      'body' => $this->preview($node_preview, 'full'),
-      'pageTitle' => $this->previewTitle($node_preview),
+      'baseURL' => rtrim(\Drupal::request()->getSchemeAndHttpHost() . base_path(), '/'),
+      'urlPath' => \Drupal::service('path.alias_manager')->getAliasByPath('/node/' . $node_preview->id()),
+      'title' => $this->previewTitle($node_preview),
+      'text' => $this->preview($node_preview, 'full'),
+      'keyword' => $keyword,
     ];
+
+    // Markup for YoastSeo.js library output.
+    // @todo: Add template.
+    $markup = '<div id="yoast-seo-preview-snippet"></div><div id="yoast-seo-preview-output"></div>';
 
     $response = new AjaxResponse();
     $response->addCommand(new SettingsCommand($settings, TRUE));
-    $response->addCommand(new InvokeCommand('#edit-yoast-seo-preview-button', 'change'));
+    $response->addCommand(new OpenModalDialogCommand('Seo Preview', $markup, ['dialogClass' => 'yoast-seo-preview-dialog', 'minWidth' => 700]));
+    $response->addCommand(new InvokeCommand('body', 'trigger', ['seoPreviewOpen', $settings['yoast_seo_preview']]));
     return $response;
   }
-  
+
   /**
    * Adds yoast_seo_preview submit.
    *
    * @param array $element
+   *   The form element to process.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The current state of the form.
    */
   public function addPreviewSubmit(array &$element, FormStateInterface $form_state) {
     $element['yoast_seo_preview_button'] = [
@@ -148,7 +174,8 @@ class YoastSeoPreviewFormHandler implements EntityHandlerInterface {
       '#value' => t('Seo preview'),
       '#ajax' => [
         'callback' => [$this, 'previewSubmitAjax'],
-      ]
+      ],
     ];
   }
+
 }
