@@ -9,7 +9,6 @@ use Drupal\Core\Field\WidgetBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\node\Entity\Node;
 use Drupal\yoast_seo_preview\Form\YoastSeoPreviewFormHandler;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -141,17 +140,6 @@ class YoastSeoPreviewWidget extends WidgetBase implements ContainerFactoryPlugin
 
       if ($form_handler instanceof YoastSeoPreviewFormHandler) {
         $form_handler->addPreviewSubmit($element, $form_state);
-
-        // Render preview.
-        $node_preview = $form_state->getFormObject()->getEntity();
-
-        if ($node_preview instanceof Node) {
-          $node_preview->in_preview = TRUE;
-          $element['#attached']['drupalSettings']['yoast_seo_preview'] = [
-            'body' => $form_handler->preview($node_preview, 'full'),
-            'pageTitle' => $form_handler->previewTitle($node_preview),
-          ];
-        }
       }
     }
     return $element;
