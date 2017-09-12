@@ -14,6 +14,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Entity\EntityHandlerInterface;
+use Drupal\metatag\MetatagManagerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -52,6 +53,20 @@ class YoastSeoPreviewFormHandler implements EntityHandlerInterface {
   protected $renderer;
 
   /**
+   * Drupal\metatag\MetatagManager definition.
+   *
+   * @var \Drupal\metatag\MetatagManager
+   */
+  protected $metatagManager;
+
+  /**
+   * The tag values.
+   *
+   * @var array
+   */
+  protected $metatags = [];
+
+  /**
    * SeoPreviewFormHandler constructor.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
@@ -60,12 +75,15 @@ class YoastSeoPreviewFormHandler implements EntityHandlerInterface {
    *   The entity type manager.
    * @param \Drupal\Core\Render\RendererInterface $renderer
    *   The renderer.
+   * @param Drupal\metatag\MetatagManagerInterface $metatag_manager
+   *   The metatag manager.
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, RendererInterface $renderer) {
+  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, RendererInterface $renderer, MetatagManagerInterface $metatag_manager) {
     $this->entityTypeId = $entity_type->id();
     $this->entityType = $entity_type;
     $this->entityTypeManager = $entity_type_manager;
     $this->renderer = $renderer;
+    $this->metatagManager = $metatag_manager;
   }
 
   /**
@@ -75,15 +93,16 @@ class YoastSeoPreviewFormHandler implements EntityHandlerInterface {
     return new static(
       $entity_type,
       $container->get('entity_type.manager'),
-      $container->get('renderer')
+      $container->get('renderer'),
+      $container->get('metatag.manager')
     );
   }
 
   /**
    * Renders a node preview.
    *
-   * @param \Drupal\Core\Entity\EntityInterface $node_preview
-   *   The node preview.
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The entity preview.
    * @param string $view_mode_id
    *   (optional) The view mode that should be used to display the entity.
    *   Defaults to 'full'.
@@ -91,16 +110,16 @@ class YoastSeoPreviewFormHandler implements EntityHandlerInterface {
    * @return array
    *   A render array as expected by drupal_render().
    */
-  public function preview(EntityInterface $node_preview, $view_mode_id = 'full') {
-    $node_preview->preview_view_mode = $view_mode_id;
+  public function preview(EntityInterface $entity, $view_mode_id = 'full') {
+    $entity->preview_view_mode = $view_mode_id;
 
     // Building preview, see NodePreviewController.
     $build = $this->entityTypeManager
-      ->getViewBuilder($node_preview->getEntityTypeId())
-      ->view($node_preview, $view_mode_id);
+      ->getViewBuilder($entity->getEntityTypeId())
+      ->view($entity, $view_mode_id);
 
-    $build['#entity_type'] = $node_preview->getEntityTypeId();
-    $build['#' . $build['#entity_type']] = $node_preview;
+    $build['#entity_type'] = $entity->getEntityTypeId();
+    $build['#' . $build['#entity_type']] = $entity;
     $build['#attached']['library'][] = 'node/drupal.node.preview';
 
     // Don't render cache previews.
@@ -110,16 +129,57 @@ class YoastSeoPreviewFormHandler implements EntityHandlerInterface {
   }
 
   /**
+   * Extract meta tags from entity.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The entity.
+   */
+  public function getMetaTags(EntityInterface $entity) {
+
+    if (!isset($this->metatags[$entity->id()])) {
+      foreach ($this->metatagManager->tagsFromEntityWithDefaults($entity) as $tag => $data) {
+        $metatags[$tag] = $data;
+      }
+
+      // Trigger hook_metatags_alter().
+      $context = [
+        'entity' => $entity,
+      ];
+      \Drupal::service('module_handler')
+        ->alter('metatags', $metatags, $context);
+
+      $this->metatags[$entity->id()] = $this->metatagManager->generateRawElements($metatags, $entity);
+    }
+
+    return $this->metatags[$entity->id()];
+  }
+
+  /**
    * Renders the title of a node in preview.
    *
-   * @param \Drupal\Core\Entity\EntityInterface $node_preview
-   *   The current node.
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The current entity.
    *
    * @return string
-   *   The  title.
+   *   The title.
    */
-  public function previewTitle(EntityInterface $node_preview) {
-    return $node_preview->label();
+  public function getTitle(EntityInterface $entity) {
+    $tags = $this->getMetaTags($entity);
+    return html_entity_decode($tags['description']['#attributes']['content'], ENT_QUOTES);
+  }
+
+  /**
+   * Renders the title of a node in preview.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The current entity.
+   *
+   * @return string
+   *   The meta description.
+   */
+  public function getMetaDesc(EntityInterface $entity) {
+    $tags = $this->getMetaTags($entity);
+    return html_entity_decode($tags['description']['#attributes']['content'], ENT_QUOTES);
   }
 
   /**
@@ -144,14 +204,15 @@ class YoastSeoPreviewFormHandler implements EntityHandlerInterface {
     $settings['yoast_seo_preview'] = [
       'baseURL' => rtrim(\Drupal::request()->getSchemeAndHttpHost() . base_path(), '/'),
       'urlPath' => \Drupal::service('path.alias_manager')->getAliasByPath('/node/' . $node_preview->id()),
-      'title' => $this->previewTitle($node_preview),
+      'title' => $this->getTitle($node_preview),
+      'metaDesc' => $this->getMetaDesc($node_preview),
       'text' => $this->preview($node_preview, 'full'),
       'keyword' => $keyword,
     ];
 
     // Markup for YoastSeo.js library output.
     // @todo: Add template.
-    $markup = '<div id="yoast-seo-preview-snippet"></div><div id="yoast-seo-preview-output"></div>';
+    $markup = '<div id="yoast-seo-preview-snippet"></div><div id="yoast-seo-preview-output"</div>';
 
     $response = new AjaxResponse();
     $response->addCommand(new SettingsCommand($settings, TRUE));
