@@ -165,7 +165,7 @@ class YoastSeoPreviewFormHandler implements EntityHandlerInterface {
    */
   public function getTitle(EntityInterface $entity) {
     $tags = $this->getMetaTags($entity);
-    return html_entity_decode($tags['description']['#attributes']['content'], ENT_QUOTES);
+    return html_entity_decode($tags['title']['#attributes']['content'], ENT_QUOTES);
   }
 
   /**
@@ -194,8 +194,8 @@ class YoastSeoPreviewFormHandler implements EntityHandlerInterface {
    *   The ajax response.
    */
   public function previewSubmitAjax(array &$form, FormStateInterface $form_state) {
-    $node_preview = $form_state->getFormObject()->getEntity();
-    $node_preview->in_preview = TRUE;
+    $preview_entity = $form_state->getFormObject()->buildEntity($form, $form_state);
+    $preview_entity->in_preview = TRUE;
 
     $parents = $form_state->getTriggeringElement()['#parents'];
     array_splice($parents, -1, 1, 'keyword');
@@ -203,10 +203,10 @@ class YoastSeoPreviewFormHandler implements EntityHandlerInterface {
 
     $settings['yoast_seo_preview'] = [
       'baseURL' => rtrim(\Drupal::request()->getSchemeAndHttpHost() . base_path(), '/'),
-      'urlPath' => \Drupal::service('path.alias_manager')->getAliasByPath('/node/' . $node_preview->id()),
-      'title' => $this->getTitle($node_preview),
-      'metaDesc' => $this->getMetaDesc($node_preview),
-      'text' => $this->preview($node_preview, 'full'),
+      'urlPath' => \Drupal::service('path.alias_manager')->getAliasByPath('/node/' . $preview_entity->id()),
+      'title' => $this->getTitle($preview_entity),
+      'metaDesc' => $this->getMetaDesc($preview_entity),
+      'text' => $this->preview($preview_entity, 'full'),
       'keyword' => $keyword,
     ];
 
