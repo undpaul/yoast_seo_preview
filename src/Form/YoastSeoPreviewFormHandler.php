@@ -216,7 +216,14 @@ class YoastSeoPreviewFormHandler implements EntityHandlerInterface {
 
     $response = new AjaxResponse();
     $response->addCommand(new SettingsCommand($settings, TRUE));
-    $response->addCommand(new OpenModalDialogCommand('Seo Preview', $markup, ['dialogClass' => 'yoast-seo-preview-dialog', 'minWidth' => 700]));
+    $response->addCommand(new OpenModalDialogCommand(
+      'Seo Preview', $markup,
+      [
+        'dialogClass' => 'yoast-seo-preview-dialog',
+        'minHeight' => 400,
+        'minWidth' => 700,
+      ]
+    ));
     $response->addCommand(new InvokeCommand('body', 'trigger', ['seoPreviewOpen', $settings['yoast_seo_preview']]));
     return $response;
   }
