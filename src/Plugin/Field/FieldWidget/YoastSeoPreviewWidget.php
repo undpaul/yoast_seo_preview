@@ -113,10 +113,7 @@ class YoastSeoPreviewWidget extends WidgetBase implements ContainerFactoryPlugin
     ];
 
     $element = [
-      '#type' => 'details',
-      '#weight' => 99,
-      '#title' => t('SEO preview'),
-      '#open' => TRUE,
+      '#type' => 'container',
       '#attached' => [
         'library' => [
           'yoast_seo_preview/seo_preview',
