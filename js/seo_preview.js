@@ -10,10 +10,10 @@
 
       $(context).on('seoPreviewOpen', function (event, args) {
         /* global YoastSeoDrupal */
-        var dsp = new YoastSeoDrupal();
+        var DrupalSeoPreview = new YoastSeoDrupal();
         var snippetTarget = $('#yoast-seo-preview-snippet', context).get(0);
 
-        var snippetPreview = new dsp.SnippetPreview({
+        var snippetPreview = new DrupalSeoPreview.SnippetPreview({
           targetElement: snippetTarget,
           baseURL: args['baseURL'],
           data: {
@@ -26,7 +26,7 @@
         // Disable snippet editor events.
         snippetPreview.bindEvents = function () {};
 
-        var app = new dsp.App({
+        var app = new DrupalSeoPreview.App({
           snippetPreview: snippetPreview,
           targets: {
             output: 'yoast-seo-preview-output'
