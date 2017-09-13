@@ -1,19 +1,21 @@
 {
-  "name": "ol0lll/yoast_seo_preview",
-  "type": "drupal-module",
+  "name": "drupal/yoast_seo_preview",
   "description": "Provides YoastSEO.js content analysis based on node preview",
+  "type": "drupal-module",
   "keywords": ["Drupal"],
   "license": "GPL-2.0+",
   "homepage": "https://github.com/ol0lll/yoast_seo_preview",
+  "authors": [{
+    "name": "Volker Killesreiter",
+    "homepage": "https://www.drupal.org/u/volkerk"
+  }],
   "support": {
-    "issues": "https://github.com/ol0lll/yoast_seo_preview/issues"
+    "issues": "https://www.drupal.org/project/issues/2908463"
   },
-  "repositories": [
-    {
-      "type": "composer",
-      "url": "https://asset-packagist.org"
-    }
-  ],
+  "repositories": [{
+    "type": "composer",
+    "url": "https://asset-packagist.org"
+  }],
   "require": {
     "bower-asset/yoast-seo-drupal": "1.0.0"
   },
