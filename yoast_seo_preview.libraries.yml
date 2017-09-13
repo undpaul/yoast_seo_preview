@@ -1,18 +1,14 @@
-yoast-seo-drupal:
-  version: 1.2.0
+yoast_seo_drupal:
   js:
-    js/yoast-seo-drupal.min.js: {}
-  dependencies:
-    - core/jquery
-    - core/jquery.once
-    - core/drupal
-    - core/drupalSettings
+    /libraries/yoast_seo_drupal/yoast-seo-drupal.min.js: { minified: true }
   css:
     component:
-      css/yoast-seo-drupal.min.css: {}
+      /libraries/yoast_seo_drupal/yoast-seo-drupal.min.css: {}
 
 seo_preview:
   js:
     js/seo_preview.js: {}
   dependencies:
-    - yoast_seo_preview/yoast-seo-drupal
+    - core/jquery
+    - core/drupal
+    - yoast_seo_preview/yoast_seo_drupal
