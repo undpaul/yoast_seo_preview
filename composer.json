@@ -8,6 +8,14 @@
   "support": {
     "issues": "https://github.com/ol0lll/yoast_seo_preview/issues"
   },
-  "require": { },
+  "repositories": [
+    {
+      "type": "composer",
+      "url": "https://asset-packagist.org"
+    }
+  ],
+  "require": {
+    "bower-asset/yoast-seo-drupal": "1.0.0"
+  },
   "minimum-stability": "dev"
 }

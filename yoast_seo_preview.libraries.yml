@@ -1,9 +1,9 @@
-yoast_seo_drupal:
+yoast-seo-drupal:
   js:
-    /libraries/yoast_seo_drupal/yoast-seo-drupal.min.js: { minified: true }
+    /libraries/yoast-seo-drupal/yoast-seo-drupal.min.js: { minified: true }
   css:
     component:
-      /libraries/yoast_seo_drupal/yoast-seo-drupal.min.css: {}
+      /libraries/yoast-seo-drupal/yoast-seo-drupal.min.css: {}
 
 seo_preview:
   js:
@@ -11,4 +11,4 @@ seo_preview:
   dependencies:
     - core/jquery
     - core/drupal
-    - yoast_seo_preview/yoast_seo_drupal
+    - yoast_seo_preview/yoast-seo-drupal

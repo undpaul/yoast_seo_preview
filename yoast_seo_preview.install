@@ -14,18 +14,18 @@ function yoast_seo_preview_requirements($phase) {
   }
 
   if (function_exists('libraries_get_path')) {
-    $path = libraries_get_path('yoast_seo_drupal') . '/yoast-seo-drupal.min.js';
+    $path = libraries_get_path('yoast-seo-drupal') . '/yoast-seo-drupal.min.js';
   }
   else {
-    $path = DRUPAL_ROOT . '/libraries/yoast_seo_drupal/yoast-seo-drupal.min.js';
+    $path = DRUPAL_ROOT . '/libraries/yoast-seo-drupal/yoast-seo-drupal.min.js';
   }
 
   $exists = is_file($path);
 
   return [
-    'yoast_seo_drupal_library' => [
-      'title'       => t('yoast_seo_drupal library'),
-      'description' => $exists ? '' : t('The <a href=":url">yoast_seo_drupal library</a> should be installed at <strong>/libraries/yoast_seo_drupal/yoast-seo-drupal.min.js</strong>, or any path supported by libraries.module if installed.', [':url' => 'https://github.com/BurdaMagazinOrg/yoast_seo_drupal']),
+    'yoast-seo-drupal_library' => [
+      'title'       => t('yoast-seo-drupal library'),
+      'description' => $exists ? '' : t('The <a href=":url">yoast-seo-drupal library</a> should be installed at <strong>/libraries/yoast-seo-drupal/yoast-seo-drupal.min.js</strong>, or any path supported by libraries.module if installed.', [':url' => 'https://github.com/BurdaMagazinOrg/yoast-seo-drupal']),
       'severity'    => $exists ? REQUIREMENT_OK : REQUIREMENT_ERROR,
       'value'       => $exists ? t('Installed') : t('Not installed'),
     ],
