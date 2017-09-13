@@ -3,4 +3,4 @@ Provides [YoastSEO.js](https://github.com/Yoast/YoastSEO.js) content analysis ba
 
 # Installation
 
-Download https://github.com/Yoast/YoastSEO.js/archive/1.2.0.zip and extract the download to /libraries/YoastSEO.js (or any libraries directory if you're using the Libraries module).
+Download https://github.com/BurdaMagazinOrg/yoast_seo_drupal.git and extract the download to /libraries/yoast_seo_drupal (or any libraries directory if you're using the Libraries module).
