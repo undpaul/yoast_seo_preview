@@ -66,42 +66,6 @@ class YoastSeoPreviewWidget extends WidgetBase implements ContainerFactoryPlugin
   /**
    * {@inheritdoc}
    */
-  public static function defaultSettings() {
-    $settings = [
-      'body' => 'body',
-    ];
-
-    return $settings + parent::defaultSettings();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function settingsSummary() {
-    $summary = [];
-
-    $summary[] = $this->t('Body: @body', ['@body' => $this->getSetting('body')]);
-
-    return $summary;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function settingsForm(array $form, FormStateInterface $form_state) {
-    $element = [];
-    /** @var EntityFormDisplayInterface $form_display */
-    $form_display = $form_state->getFormObject()->getEntity();
-    $entity_type = $form_display->getTargetEntityTypeId();
-    $bundle = $form_display->getTargetBundle();
-    $fields = $this->entityFieldManager->getFieldDefinitions($entity_type, $bundle);
-
-    return $element;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
     $form['#yoast_settings'] = $this->getSettings();
 
