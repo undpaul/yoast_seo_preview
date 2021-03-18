@@ -47,15 +47,3 @@ function yoast_seo_preview_form_field_storage_config_edit_form_alter(&$form, For
     $form['cardinality_container']['#disabled'] = TRUE;
   }
 }
-
-/**
- * Implements hook_library_info_alter().
- */
-function yoast_seo_preview_library_info_alter(&$libraries, $extension) {
-  if ($extension === 'yoast-seo-drupal' && function_exists('libraries_get_path')) {
-    if ($library_path = libraries_get_path('yoast-seo-drupal')) {
-      $libraries['yoast-seo-drupal']['js'] = ['/' . $library_path . '/yoast-seo-drupal.min.js' => ['minified' => TRUE]];
-      $libraries['yoast-seo-drupal']['css']['component'] = ['/' . $library_path . '/yoast-seo-drupal.min.css' => []];
-    }
-  }
-}

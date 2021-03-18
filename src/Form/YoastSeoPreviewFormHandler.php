@@ -203,7 +203,7 @@ class YoastSeoPreviewFormHandler implements EntityHandlerInterface {
 
     $settings['yoast_seo_preview'] = [
       'baseURL' => rtrim(\Drupal::request()->getSchemeAndHttpHost() . base_path(), '/'),
-      'urlPath' => \Drupal::service('path.alias_manager')->getAliasByPath('/node/' . $preview_entity->id()),
+      'urlPath' => \Drupal::service('path_alias.manager')->getAliasByPath('/node/' . $preview_entity->id()),
       'title' => $this->getTitle($preview_entity),
       'metaDesc' => $this->getMetaDesc($preview_entity),
       'text' => $this->preview($preview_entity, 'full'),
