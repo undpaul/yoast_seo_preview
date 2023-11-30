@@ -8,14 +8,18 @@ use Drupal\Core\Ajax\InvokeCommand;
 use Drupal\Core\Ajax\OpenModalDialogCommand;
 use Drupal\Core\Ajax\SettingsCommand;
 use Drupal\Core\DependencyInjection\DependencySerializationTrait;
+use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Entity\EntityHandlerInterface;
 use Drupal\metatag\MetatagManagerInterface;
+use Drupal\path_alias\AliasManagerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Base class for yoast_seo_preview form handlers.
@@ -55,9 +59,30 @@ class YoastSeoPreviewFormHandler implements EntityHandlerInterface {
   /**
    * Drupal\metatag\MetatagManager definition.
    *
-   * @var \Drupal\metatag\MetatagManager
+   * @var \Drupal\metatag\MetatagManagerInterface
    */
   protected $metatagManager;
+
+  /**
+   * The module handler.
+   *
+   * @var \Drupal\Core\Extension\ModuleHandlerInterface
+   */
+  protected ModuleHandlerInterface $moduleHandler;
+
+  /**
+   * The currently active request object.
+   *
+   * @var \Symfony\Component\HttpFoundation\Request
+   */
+  protected Request $request;
+
+  /**
+   * The alias manager.
+   *
+   * @var \Drupal\path_alias\AliasManagerInterface
+   */
+  protected AliasManagerInterface $aliasManager;
 
   /**
    * The tag values.
@@ -75,26 +100,39 @@ class YoastSeoPreviewFormHandler implements EntityHandlerInterface {
    *   The entity type manager.
    * @param \Drupal\Core\Render\RendererInterface $renderer
    *   The renderer.
-   * @param Drupal\metatag\MetatagManagerInterface $metatag_manager
+   * @param \Drupal\metatag\MetatagManagerInterface $metatag_manager
    *   The metatag manager.
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   *   The module handler.
+   * @param \Symfony\Component\HttpFoundation\Request $request
+   *   The currently active request.
+   * @param \Drupal\path_alias\AliasManagerInterface $alias_manager
+   *   The alias manager.
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, RendererInterface $renderer, MetatagManagerInterface $metatag_manager) {
+  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, RendererInterface $renderer, MetatagManagerInterface $metatag_manager, ModuleHandlerInterface $module_handler, Request $request, AliasManagerInterface $alias_manager) {
     $this->entityTypeId = $entity_type->id();
     $this->entityType = $entity_type;
     $this->entityTypeManager = $entity_type_manager;
     $this->renderer = $renderer;
     $this->metatagManager = $metatag_manager;
+    $this->moduleHandler = $module_handler;
+    $this->request = $request;
+    $this->aliasManager = $alias_manager;
   }
 
   /**
    * {@inheritdoc}
    */
   public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
+    // @phpstan-ignore-next-line
     return new static(
       $entity_type,
       $container->get('entity_type.manager'),
       $container->get('renderer'),
-      $container->get('metatag.manager')
+      $container->get('metatag.manager'),
+      $container->get('module_handler'),
+      $container->get('request_stack')->getCurrentRequest(),
+      $container->get('path_alias.manager')
     );
   }
 
@@ -107,10 +145,11 @@ class YoastSeoPreviewFormHandler implements EntityHandlerInterface {
    *   (optional) The view mode that should be used to display the entity.
    *   Defaults to 'full'.
    *
-   * @return array
-   *   A render array as expected by drupal_render().
+   * @return \Drupal\Component\Render\MarkupInterface
+   *   The rendered HTML.
    */
   public function preview(EntityInterface $entity, $view_mode_id = 'full') {
+    // @phpstan-ignore-next-line
     $entity->preview_view_mode = $view_mode_id;
 
     // Building preview, see NodePreviewController.
@@ -131,11 +170,13 @@ class YoastSeoPreviewFormHandler implements EntityHandlerInterface {
   /**
    * Extract meta tags from entity.
    *
-   * @param \Drupal\Core\Entity\EntityInterface $entity
+   * @param \Drupal\Core\Entity\ContentEntityInterface $entity
    *   The entity.
+   *
+   * @return array
+   *   Render array with tag elements.
    */
-  public function getMetaTags(EntityInterface $entity) {
-
+  public function getMetaTags(ContentEntityInterface $entity) {
     if (!isset($this->metatags[$entity->id()])) {
       foreach ($this->metatagManager->tagsFromEntityWithDefaults($entity) as $tag => $data) {
         $metatags[$tag] = $data;
@@ -145,8 +186,7 @@ class YoastSeoPreviewFormHandler implements EntityHandlerInterface {
       $context = [
         'entity' => $entity,
       ];
-      \Drupal::service('module_handler')
-        ->alter('metatags', $metatags, $context);
+      $this->moduleHandler->alter('metatags', $metatags, $context);
 
       $this->metatags[$entity->id()] = $this->metatagManager->generateRawElements($metatags, $entity);
     }
@@ -157,13 +197,13 @@ class YoastSeoPreviewFormHandler implements EntityHandlerInterface {
   /**
    * Renders the title of a node in preview.
    *
-   * @param \Drupal\Core\Entity\EntityInterface $entity
+   * @param \Drupal\Core\Entity\ContentEntityInterface $entity
    *   The current entity.
    *
    * @return string
    *   The title.
    */
-  public function getTitle(EntityInterface $entity) {
+  public function getTitle(ContentEntityInterface $entity) {
     $tags = $this->getMetaTags($entity);
     return html_entity_decode($tags['title']['#attributes']['content'], ENT_QUOTES);
   }
@@ -171,13 +211,13 @@ class YoastSeoPreviewFormHandler implements EntityHandlerInterface {
   /**
    * Renders the title of a node in preview.
    *
-   * @param \Drupal\Core\Entity\EntityInterface $entity
+   * @param \Drupal\Core\Entity\ContentEntityInterface $entity
    *   The current entity.
    *
    * @return string
    *   The meta description.
    */
-  public function getMetaDesc(EntityInterface $entity) {
+  public function getMetaDesc(ContentEntityInterface $entity) {
     $tags = $this->getMetaTags($entity);
     return html_entity_decode($tags['description']['#attributes']['content'], ENT_QUOTES);
   }
@@ -194,16 +234,19 @@ class YoastSeoPreviewFormHandler implements EntityHandlerInterface {
    *   The ajax response.
    */
   public function previewSubmitAjax(array &$form, FormStateInterface $form_state) {
+    // @phpstan-ignore-next-line
     $preview_entity = $form_state->getFormObject()->buildEntity($form, $form_state);
     $preview_entity->in_preview = TRUE;
 
-    $parents = $form_state->getTriggeringElement()['#parents'];
+    $triggering_element = $form_state->getTriggeringElement();
+    $parents = $triggering_element ? $triggering_element['#parents'] : [];
     array_splice($parents, -1, 1, 'keyword');
-    $keyword = NestedArray::getValue($form_state->getUserInput(), $parents);
+    $user_input = $form_state->getUserInput();
+    $keyword = NestedArray::getValue($user_input, $parents);
 
     $settings['yoast_seo_preview'] = [
-      'baseURL' => rtrim(\Drupal::request()->getSchemeAndHttpHost() . base_path(), '/'),
-      'urlPath' => \Drupal::service('path_alias.manager')->getAliasByPath('/node/' . $preview_entity->id()),
+      'baseURL' => rtrim($this->request->getSchemeAndHttpHost() . base_path(), '/'),
+      'urlPath' => $this->aliasManager->getAliasByPath('/node/' . $preview_entity->id()),
       'title' => $this->getTitle($preview_entity),
       'metaDesc' => $this->getMetaDesc($preview_entity),
       'text' => $this->preview($preview_entity, 'full'),
@@ -211,7 +254,7 @@ class YoastSeoPreviewFormHandler implements EntityHandlerInterface {
     ];
 
     // Markup for YoastSeo.js library output.
-    // @todo: Add template.
+    // @todo Add template for the preview markup.
     $markup = '<div id="yoast-seo-preview-snippet"></div><div id="yoast-seo-preview-output"</div>';
 
     $response = new AjaxResponse();
@@ -224,7 +267,10 @@ class YoastSeoPreviewFormHandler implements EntityHandlerInterface {
         'minWidth' => 700,
       ]
     ));
-    $response->addCommand(new InvokeCommand('body', 'trigger', ['seoPreviewOpen', $settings['yoast_seo_preview']]));
+    $response->addCommand(new InvokeCommand('body', 'trigger', [
+      'seoPreviewOpen',
+      $settings['yoast_seo_preview'],
+    ]));
     return $response;
   }
 
@@ -236,7 +282,7 @@ class YoastSeoPreviewFormHandler implements EntityHandlerInterface {
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The current state of the form.
    */
-  public function addPreviewSubmit(array &$element, FormStateInterface $form_state) {
+  public function addPreviewSubmit(array &$element, FormStateInterface $form_state): void {
     $element['yoast_seo_preview_button'] = [
       '#type' => 'button',
       '#value' => t('Seo preview'),

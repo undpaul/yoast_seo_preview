@@ -43,6 +43,7 @@ class YoastSeoPreviewWidget extends WidgetBase implements ContainerFactoryPlugin
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+    // @phpstan-ignore-next-line
     return new static(
       $plugin_id,
       $plugin_definition,
@@ -73,7 +74,8 @@ class YoastSeoPreviewWidget extends WidgetBase implements ContainerFactoryPlugin
     // @todo Add values to settings.
     $keyword = $element + [
       '#type' => 'textfield',
-      '#default_value' => isset($items[$delta]->value) ? $items[$delta]->value : NULL,
+      // @phpstan-ignore-next-line
+      '#default_value' => $items[$delta]->value,
     ];
 
     $element = [

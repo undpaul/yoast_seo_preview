@@ -11,8 +11,10 @@ use Drupal\yoast_seo_preview\Form\YoastSeoPreviewFormHandler;
 
 /**
  * Implements hook_help().
+ *
+ * @phpstan-ignore-next-line
  */
-function yoast_seo_preview_help($route_name, RouteMatchInterface $route_match) {
+function yoast_seo_preview_help(string $route_name, RouteMatchInterface $route_match) {
   switch ($route_name) {
     // Main module help for the yoast_seo_preview module.
     case 'help.page.yoast_seo_preview':
@@ -20,8 +22,6 @@ function yoast_seo_preview_help($route_name, RouteMatchInterface $route_match) {
       $output .= '<h3>' . t('About') . '</h3>';
       $output .= '<p>' . t('SEO Preview') . '</p>';
       return $output;
-
-    default:
   }
 }
 
@@ -32,16 +32,20 @@ function yoast_seo_preview_help($route_name, RouteMatchInterface $route_match) {
  *
  * @see \Drupal\Core\Entity\Annotation\EntityType
  */
-function yoast_seo_preview_entity_type_alter(array &$entity_types) {
-  /* @var $entity_types \Drupal\Core\Entity\EntityTypeInterface[] */
+function yoast_seo_preview_entity_type_alter(array &$entity_types): void {
+  /** @var \Drupal\Core\Entity\EntityTypeInterface[] $entity_types */
   $entity_types['node']->setHandlerClass('yoast_seo_preview_form', YoastSeoPreviewFormHandler::class);
 }
 
 /**
  * Implements hook_form_FORM_ID_alter().
  */
-function yoast_seo_preview_form_field_storage_config_edit_form_alter(&$form, FormStateInterface $form_state) {
-  if ($form_state->getFormObject()->getEntity()->getType() === 'yoast_seo_preview') {
+function yoast_seo_preview_form_field_storage_config_edit_form_alter(array &$form, FormStateInterface $form_state): void {
+  /** @var \Drupal\field_ui\Form\FieldStorageConfigEditForm $form_object */
+  $form_object = $form_state->getFormObject();
+  /** @var \Drupal\field\FieldStorageConfigInterface $entity */
+  $entity = $form_object->getEntity();
+  if ($entity->getType() === 'yoast_seo_preview') {
     // Hide the cardinality field.
     $form['cardinality_container']['#access'] = FALSE;
     $form['cardinality_container']['#disabled'] = TRUE;
